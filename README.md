@@ -1,40 +1,33 @@
-# OneBox Deploy
+# Dynamics 365 Package Installer Module
 
-This repository contains PowerShell cmdlet for developers and administrators to deploy [Microsoft Dynamics 365 for Operations](https://ax.help.dynamics.com/en/) deployable runtime package.
+This PowerShell module provides a function to automate the installation of a pre-downloaded Microsoft Dynamics 365 deployable package. It is intended for use in cloud-hosted development or test environments.
 
-## Supported environment
+The script wraps the `AXUpdateInstaller` to generate and execute a deployment runbook, automating the steps described in the [Install deployable packages from the command line](https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/deployment/install-deployable-package) tutorial.
 
-Cmdlet supposed to be ran in [OneBox](https://ax.help.dynamics.com/en/wiki/access-microsoft-dynamics-ax-7-instances-2/#vm-that-is-running-on-premises) topology used as on-premises Test environment, executed after a build is complete. Supported build definition is described in this article: [Developer topology deployment with continuous build and test automation](https://ax.help.dynamics.com/en/wiki/developer-topology-deployment-with-continuous-build-and-test-automation/)
+## Prerequisites
 
-## How it works
+Before using this module, you must have a deployable package downloaded and unpacked into a single directory. This directory is the working directory for the `AXUpdateInstaller`. It must contain:
 
-Recommended location is ```C:\Deploy\``` directory. 
-* Package is downloaded from Visual Studio Team Services project; 
-* Specified build definition is searched for latest successful build;
-* If one found, it's artifacts are downloaded and unpacked;
-* Rest of scenario is automation of the steps described in [Manual apply a deployable package](https://ax.help.dynamics.com/en/wiki/installing-deployable-package-in-ax7/) tutorial.
-
-Script directory is a working directory. Following subdirectories are created on each run:
-
-* ```<Build Definition>```
-	* ```<Build Id>-<Timestamp>```
-      * ```Packages```
-
-```\Packages``` directory is a working directory for ```AXUpdateInstaller```
+*   The AX Update Installer files (e.g., `AXUpdateInstaller.exe`, `Microsoft.Dynamics.AX.AXUpdateInstallerBase.dll`).
+*   The topology and service model data files (`DefaultTopologyData.xml`, `DefaultServiceModelData.xml`).
+*   The hotfix installation information (`HotfixInstallationInfo.xml`).
 
 ## Usage
 
-* ```-username``` Visual Studio Online user name. Must be authorized to read build definitions and artifacts. 
-* ```-accessToken``` [Personal access token](https://www.visualstudio.com/en-us/docs/integrate/get-started/auth/overview) used to authenticate for REST API call
-* ```-vstsProjectUri``` Full URI pointing to project in such format: ```https://<account>.visualstudio.com/defaultcollection/<ProjectName>```
-* ```-buildDefinitionName``` Build definition name
-* ```-runbook``` Name of runbook that will be created or updated. If exists will be always overwritten.
+1.  Open a PowerShell console and navigate to the directory containing the module.
+2.  Import the module:
+    ```powershell
+    Import-Module -Name .\InstallModule.psm1
+    ```
+3.  Execute the installation function, pointing it to your artifacts directory:
+    ```powershell
+    Install-AXUpdate -ArtifactsDir "C:\Path\To\Your\Unpacked\Package" -RunBook "MyDeploymentRunbook"
+    ```
 
-Cmdlet potentially can be used as a task in release management, but there was no such intention and such scenario was not tested.
+### Parameters
 
-## Miscellaneous
-
-This repo is inspired by [Azure DevTest Labs](https://github.com/Azure/azure-devtestlab) [Download and Run script](https://github.com/Azure/azure-devtestlab/tree/master/Artifacts/windows-vsts-download-and-run-script)
+*   `-ArtifactsDir` (string, Mandatory): The full path to the directory containing the unpacked deployable package and all required installer files.
+*   `-RunBook` (string, Mandatory): The name for the deployment runbook that will be generated and executed. If a runbook with this name already exists, it will be overwritten.
 
 
 
